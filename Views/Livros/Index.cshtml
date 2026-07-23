@@ -1,0 +1,28 @@
+﻿@model List<WebBiblioteca.Models.Livro>
+
+    <h1>Lista de Livros</h1>
+
+    <table class="table">
+    <thread>
+        <tr>
+            <th>Sequencial</th>
+			<th>Titulo</th>
+            <th>Tombo</th>
+        </tr>
+    </thread>
+    <tbody>
+
+        @foreach (var livro in Model)
+    {
+        <tr>
+            <td>@livro.Sequencial</td>
+            <td>@livro.Titulo</td>  
+            <td>@livro.Tombo</td>
+        </tr>
+    }
+
+    </tbody>
+</table>
+
+    
+    
