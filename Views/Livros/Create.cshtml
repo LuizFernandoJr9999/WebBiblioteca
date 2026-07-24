@@ -1,4 +1,6 @@
-﻿@model WebBiblioteca.Models.Livro
+﻿<div asp-validation-summary="All" class="text-danger"></div>
+
+@model WebBiblioteca.Models.Livro
 
 <h1>Cadastrar Livro</h1>
 
@@ -6,14 +8,22 @@
 	<div>
 		<label>Título</label>
 		<input asp-for="Titulo" />
+		<span asp-validation-for="Titulo" class="text-danger"></span>
 	</div>
 
 	<div>
 		<label>Tombo</label>
 		<input asp-for="Tombo" />
+		<span asp-validation-for="Tombo" class="text-danger"></span>
 	</div>
 
-	<button type="submit">Salvar</button> 
+	<div>
+		<label>Categoria</label>
+		<input asp-for="Cod_Categoria" />
+		<span asp-validation-for="Cod_Categoria" class="text-danger"></span>
+	</div>
+
+	<button type="submit">Salvar</button>
 
 </form>
 
