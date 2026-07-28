@@ -2,29 +2,35 @@
 
 @model WebBiblioteca.Models.Livro
 
-<h1>Cadastrar Livro</h1>
+<h1>Novo Livro</h1>
 
 <form asp-action="Create" method="post">
 	<div>
+		<label>Sequencial</label>
+		<input asp-for="Sequencial" class="form-control"  />
+		<span asp-validation-for="Sequencial" class="text-danger"></span>
+	</div>
+
+	<div>
 		<label>Título</label>
-		<input asp-for="Titulo" />
+		<input asp-for="Titulo" class="form-control"  />
 		<span asp-validation-for="Titulo" class="text-danger"></span>
 	</div>
 
 	<div>
 		<label>Tombo</label>
-		<input asp-for="Tombo" />
+		<input asp-for="Tombo" class="form-control" maxlength="10" onkeydown="return event.key != ' ';" style="width: 120px;" />
 		<span asp-validation-for="Tombo" class="text-danger"></span>
 	</div>
 
 	<div>
 		<label>Categoria</label>
-		<input asp-for="Cod_Categoria" />
+		<input asp-for="Cod_Categoria" class="form-control"  />
 		<span asp-validation-for="Cod_Categoria" class="text-danger"></span>
 	</div>
 
-	<button type="submit">Salvar</button>
+	<button type="submit" class="btn btn-primary">Salvar</button>
 
 </form>
 
-<a href="/Livros">Voltar</a>
+<!--a href="/Livros">Voltar</!--a>

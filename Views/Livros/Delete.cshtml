@@ -1,12 +1,24 @@
-﻿@model Livro
+﻿@model WebBiblioteca.Models.Livro
 
 <h2>Excluir Livro</h2>
+@if (Model != null) 
+{
 
-<p>Tem certeza que deseja excluir o livro <strong>@Model.Titulo</strong>?</p>
+<p>Tem certeza que deseja excluir o livro:<br />
+    <strong>@Model.Sequencial - @Model.Titulo</strong>?
+</p>
 
-<form asp-action="Delete">
-    <input type="hidden" asp-for="Sequencial" />
+<form asp-action="DeleteConfirmed" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Sequencial" />
 
     <button type="submit" class="btn btn-danger">Excluir</button>
     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
+    </form>
+
+} 
+else
+{
+    <p>Livro não encontrtado.</p>
+    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+}

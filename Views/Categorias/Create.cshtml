@@ -1,0 +1,72 @@
+﻿@model WebBiblioteca.Models.Categoria
+
+<h2>Inclusão de Categoria</h2>
+
+
+<form asp-action="Create" method="post">
+
+    @Html.AntiForgeryToken()
+
+
+    <div class="form-group">
+
+        <label>Código</label>
+
+        <input asp-for="Cod_Categoria"
+               class="form-control"
+               maxlength="10"
+               style="width:150px" />
+
+        <span asp-validation-for="Cod_Categoria"
+              class="text-danger"></span>
+
+    </div>
+
+
+    <br />
+
+
+    <div class="form-group">
+
+        <label>Categoria</label>
+
+        <input asp-for="CategoriaNome"
+               class="form-control"
+               maxlength="40" />
+
+        <span asp-validation-for="CategoriaNome"
+              class="text-danger"></span>
+
+    </div>
+
+
+    <br />
+
+
+    <div class="form-group">
+
+        <label>Cor</label>
+
+        <input asp-for="Cor"
+               class="form-control"
+               maxlength="30"
+               style="width:250px" />
+
+        <span asp-validation-for="Cor"
+              class="text-danger"></span>
+
+    </div>
+
+
+    <br />
+
+
+    <button type="submit" class="btn btn-primary">
+        Salvar
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancelar
+    </a>
+
+</form>

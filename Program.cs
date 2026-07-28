@@ -1,8 +1,13 @@
+using WebBiblioteca.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<MySqlContext>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddScoped<MySqlConnectionFactory>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

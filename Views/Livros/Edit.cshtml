@@ -2,7 +2,7 @@
 
 <h2>Editar Livro</h2>
 
-<form asp-action="Edit">
+<form asp-action="Edit" method="post">
     <input type="hidden" asp-for="Sequencial" />
 
     <div class="form-group">
@@ -15,5 +15,11 @@
         <input asp-for="Tombo" class="form-control" />
     </div>
 
-    <button type="submit" class="btn btn-success">Salvar</button>
+
+    <div class="form-group">
+        <label>Categoria</label>
+        <input asp-for="Cod_Categoria" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Salvar</button>
 </form>

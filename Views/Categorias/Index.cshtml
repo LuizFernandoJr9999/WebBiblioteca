@@ -1,0 +1,100 @@
+﻿@model List<WebBiblioteca.Models.Categoria>
+
+@{
+    var mapaCores = new Dictionary<string, string>()
+    {
+        {"vermelho", "red"},
+        {"azul", "blue"},
+        {"verde", "green"},
+        {"amarelo", "yellow"},
+        {"preto", "black"},
+        {"branco", "white"},
+        {"rosa", "pink"},
+        {"laranja", "orange" },
+        {"dourado", "gold"},
+        {"infantil", "cyan"}
+    };
+}
+
+
+<h1>Lista de Categorias</h1>
+
+<a asp-action="Create" class="btn btn-primary mb-3" disabled style="pointer-events: none; opacity: 0.6;">
+    + Nova Categoria
+</a>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Código da Categoria</th>
+            <th>Categoria</th>
+            <th>Cor</th>
+            <th>Visual</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var categoria in Model)
+        {
+
+            <tr>
+                <td>@categoria.Cod_Categoria</td>
+                <td>@categoria.CategoriaNome</td>
+                <td>@categoria.Cor</td>
+                <td>
+
+
+                <td>
+                        @{
+                            var cores = categoria.Cor
+                            .Split('+', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(c => c.Trim().ToLower())
+                            .ToList();
+
+                            var coresCss = cores
+                            .Select(c => mapaCores.ContainsKey(c) ? mapaCores[c] : "gray")
+                            .ToList();
+
+                            string estiloCor;
+
+                            if (coresCss.Count == 1)
+                            {
+                                estiloCor = coresCss[0];
+                            }
+                            else
+                            {
+                                estiloCor = $"linear-gradient(to right, {string.Join(",", coresCss)})";
+                            }
+                        }
+
+                        @foreach (var cor in coresCss)
+                        {
+                        <div style="
+        width:20px;
+        height:30px;
+        display:inline-block;
+        border:1px solid black;
+        background:@cor">
+                        </div>
+                        }
+                </td>
+
+
+
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@categoria.Cod_Categoria" class="btn btn-warning" disabled
+                       style="pointer-events: none; opacity: 0.6;">
+                        Editar
+                    </a>
+
+                    <a asp-action="Delete" asp-route-id="@categoria.Cod_Categoria" class="btn btn-danger" disabled
+                       style="pointer-events: none; opacity: 0.6;">
+                        Excluir
+                    </a>
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>

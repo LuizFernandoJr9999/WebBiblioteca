@@ -1,109 +1,182 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebBiblioteca.Models;
+using WebBiblioteca.Data;
+//using MySql.Data.MySqlClient;
+using MySqlConnector;
+using Dapper;
+using System.Security.Cryptography.X509Certificates;
+using System.Configuration;
+using Microsoft.AspNetCore.Connections;
+using ZstdSharp.Unsafe;
 
 namespace WebBiblioteca.Controllers {
     public class LivrosController : Controller {
+        private readonly MySqlConnectionFactory _connectionFactory;
 
-        private static List<Livro> _livros = new List<Livro>();
-
-        static LivrosController() {
-            _livros.Add(new Livro { Sequencial = 1, Titulo = "Dom Casmurro", Tombo = "avd56", Cod_Categoria = "Romance" });
-            _livros.Add(new Livro { Sequencial = 2, Titulo = "1984", Tombo = "dff67", Cod_Categoria = "Ação" });
-        }
-
-        public IActionResult Index() {
-            //return View();
-            //var livros = new List<Livro>
-            //{
-            //     new Livro {Sequencial = 1 , Titulo = "Dom Casmurro" , Tombo = "avd56"} ,
-            //     new Livro {Sequencial = 2 , Titulo = "1984" , Tombo = "dff67"}
-            //};
-            return View(_livros);
+        public LivrosController(MySqlConnectionFactory connectionFactory) {
+            _connectionFactory = connectionFactory;
         }
 
 
-        // GET: Livros/Create
+        public IActionResult Delete(int id) {
+            Livro livro = null;
+
+            //using (var conn = new MySqlConnection("sua_string"))
+            using var conexao = _connectionFactory.CreateConnection();
+
+
+            var cmd = new MySqlCommand("SELECT * FROM livro WHERE sequencial=@sequencial", conexao);
+            cmd.Parameters.AddWithValue("@sequencial", id);
+
+            var reader = cmd.ExecuteReader();
+
+            if (reader.Read())
+            {
+                livro = new Livro
+                {
+                    Sequencial = reader.GetInt32("sequencial"),
+                    Titulo = reader.GetString("titulo")
+                };
+            }
+
+            return View(livro);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id) {
+
+            using var conexao = _connectionFactory.CreateConnection();
+
+            String sql = "DELETE FROM livro WHERE sequencial = @sequencial";
+
+            using (var cmd = new MySqlCommand(sql, conexao))
+            {
+                cmd.Parameters.AddWithValue("@sequencial", id);
+                cmd.ExecuteNonQuery();
+            }
+
+            return RedirectToAction("Index");
+
+        }
+
         public IActionResult Create() {
             return View();
         }
 
-        // POST: Livros/Create
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Create(Livro livro) {
 
-            Console.WriteLine("CHEGOU AQUI"); // Teste
-
-            //return Content("CHEGOU NO POST");
-
-
             if (!ModelState.IsValid)
-                return View(livro);
+            {
+                return View(livro);  // volta pra tela com erros
+            }
+            using var conexao = _connectionFactory.CreateConnection();
 
-            //{
+            String sql = "INSERT INTO livro (sequencial , titulo , tombo , cod_categoria ) values (@sequencial , @titulo , @tombo , @cod_categoria)";
 
-            livro.Sequencial = _livros.Any() ? _livros.Max(l => l.Sequencial) + 1 : 1;
-            _livros.Add(livro);
+            var cmd = new MySqlCommand(sql, conexao);
+            {
+                cmd.Parameters.AddWithValue("@sequencial", livro.Sequencial);
+                cmd.Parameters.AddWithValue("@titulo", livro.Titulo);
+                cmd.Parameters.AddWithValue("@tombo", livro.Tombo?.Trim());
+                cmd.Parameters.AddWithValue("@cod_categoria", livro.Cod_Categoria);
 
-            // Por enquanto só vamos simular salvando
+                cmd.ExecuteNonQuery();
+            }
+
             return RedirectToAction("Index");
-
-
-            //}
-
-            //return View(livro);
-
-            //return Content("MODEL OK");
 
         }
 
+        public IActionResult Index(int pagina = 1) {
+
+            int quantidadePorPagina = 50;
+            int deslocamento = (pagina - 1) * quantidadePorPagina;
+
+            using var conexao = _connectionFactory.CreateConnection();
+
+            var livros = conexao.Query<Livro>(
+                 @"SELECT 
+                     l.sequencial, 
+                     l.titulo, 
+                     l.tombo, 
+                     l.cod_categoria, 
+                     c.cor AS cor_categoria 
+                 FROM livro l 
+                 INNER JOIN categoria c 
+                 ON c.cod_categoria = l.cod_categoria 
+                 ORDER BY l.sequencial
+                 LIMIT @Quantidade OFFSET @Deslocamento",
+             new
+             {
+                 Quantidade = quantidadePorPagina,
+                 Deslocamento = deslocamento
+             }).ToList();
+
+            ViewBag.PaginaAtual = pagina;
+
+            return View(livros);
+        }
+
         public IActionResult Edit(int id) {
-            var livro = _livros.FirstOrDefault(l => l.Sequencial == id);
-            if (livro == null)
+
+            Livro livro = null;
+
+            using var conexao = _connectionFactory.CreateConnection();
+
+            string sql = "SELECT * FROM livro WHERE sequencial = @sequencial";
+
+            using (var cmd = new MySqlCommand(sql, conexao))
             {
-                return NotFound();
+
+                cmd.Parameters.AddWithValue("@sequencial", id);
+
+                conexao.Open();
+
+                using (var reader = cmd.ExecuteReader())
+
+                {
+                    if (reader.Read())
+                    {
+                        livro = new Livro
+                        {
+                            Sequencial = reader.GetInt32("sequencial"),
+                            Titulo = reader.GetString("titulo"),
+                            Tombo = reader.GetString("tombo"),
+                            Cod_Categoria = reader.GetString("cod_categoria")
+                        };
+                    }
+                }
+
+                return View(livro);
             }
-            return View(livro);
         }
 
         [HttpPost]
         public IActionResult Edit(Livro livro) {
-            if (!ModelState.IsValid)
-                return View(livro);
-            var existingLivro = _livros.FirstOrDefault(l => l.Sequencial == livro.Sequencial);
-            if (existingLivro == null)
+            using var conexao = _connectionFactory.CreateConnection();
+
+            conexao.Open();
+
+            string sql = @"UPDATE livro 
+                       SET titulo=@titulo, 
+                           tombo=@tombo,
+                           cod_categoria=@cod_categoria
+                       WHERE sequencial = @sequencial";
+
+            using (var cmd = new MySqlCommand(sql, conexao))
             {
-                return NotFound();
+                cmd.Parameters.AddWithValue("@sequencial", livro.Sequencial);
+                cmd.Parameters.AddWithValue("@titulo", livro.Titulo);
+                cmd.Parameters.AddWithValue("@tombo", livro.Tombo);
+                cmd.Parameters.AddWithValue("@cod_categoria", livro.Cod_Categoria);
+
+                conexao.Open();
+                cmd.ExecuteNonQuery();
             }
-            existingLivro.Titulo = livro.Titulo;
-            existingLivro.Tombo = livro.Tombo;
-            existingLivro.Cod_Categoria = livro.Cod_Categoria;
-            return RedirectToAction("Index");
-
-        }
-
-        public IActionResult Delete(int id) {
-
-            var livro = _livros.FirstOrDefault(l => l.Sequencial == id);
-            if (livro == null)
-            {
-                return NotFound();
-            }
-            return View(livro);
-        }
-
-        [HttpPost]
-        public IActionResult Delete(Livro livro) {
-            var livroExistente = _livros.FirstOrDefault(l => l.Sequencial == livro.Sequencial);
-            if (livroExistente == null)
-            {
-                return NotFound();
-            }
-
-            if (livroExistente != null)
-            {
-                _livros.Remove(livroExistente);
-            }
-
             return RedirectToAction("Index");
         }
     }

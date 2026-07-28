@@ -1,20 +1,37 @@
 ﻿@model List<WebBiblioteca.Models.Livro>
 
+@{
+    var mapaCores = new Dictionary<string, string>()
+    {
+        {"vermelho", "red"},
+        {"azul", "blue"},
+        {"verde", "green"},
+        {"amarelo", "yellow"},
+        {"preto", "black"},
+        {"branco", "white"},
+        {"rosa", "pink"},
+        {"laranja", "orange"},
+        {"dourado", "gold"},
+        {"infantil", "cyan"}
+    };
+}
     <h1>Lista de Livros</h1>
 
     <a asp-action ="Create" class="btn btn-primary mb-3">
         + Novo Livro
     </a>
 
-    <table class="table table-striped table-hover"">
-    <thread>
+    <table class="table table-striped table-hover">
+    <thead>
         <tr>
             <th>Sequencial</th>
 			<th>Titulo</th>
             <th>Tombo</th>
             <th>Categoria</th>
+            <th>Cor Categoria</th>
+            <th>Visual></th>
         </tr>
-    </thread>
+    </thead>
     <tbody>
 
         @foreach (var livro in Model)
@@ -24,20 +41,67 @@
             <td>@livro.Titulo</td>  
             <td>@livro.Tombo</td>
             <td>@livro.Cod_Categoria</td>
+            <td>@livro.Cor_Categoria</td>
+
+                <td>
+                    @{
+                        var cores = livro.Cor_Categoria
+                        .Split('+', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(c => c.Trim().ToLower())
+                        .ToList();
+                    }
+
+                    @foreach (var cor in cores)
+                    {
+                        <div style="
+        width:20px;
+        height:20px;
+        display:inline-block;
+        border:1px solid black;
+        background:@(mapaCores.ContainsKey(cor) ? mapaCores[cor] : "gray");
+        margin-right:3px;">
+                        </div>
+                    }
+                </td>
+
             <td>
-                <a asp-action="Edit" asp-route-id="@livro.Sequencial" class=" "btn btn-warning btn-sm">
+                <a asp-action="Edit" asp-route-id="@livro.Sequencial" class="btn btn-warning">
                     Editar
                 </a>
 
-                    <a asp-action="Delete" asp-route-id="@livro.Sequencial" class=" " btn btn-warning btn-sm">
-                        Excluir
-                    </a>
+                <a asp-action="Delete" asp-route-id="@livro.Sequencial" class="btn btn-danger">
+                    Excluir
+                </a>
             </td>
         </tr>
     }
 
     </tbody>
 </table>
+<div class="mt-3">
+
+    @if (ViewBag.PaginaAtual > 1)
+    {
+        <a asp-action="Index"
+           asp-route-pagina="@(ViewBag.PaginaAtual - 1)"
+           class="btn btn-secondary">
+            Anterior
+        </a>
+    }
+
+
+    <span class="mx-3">
+        Página @ViewBag.PaginaAtual
+    </span>
+
+
+    <a asp-action="Index"
+       asp-route-pagina="@(ViewBag.PaginaAtual + 1)"
+       class="btn btn-primary">
+        Próxima
+    </a>
+
+</div>
 
     
     
